@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAROA PMS - PT. MAROA TUNGGA ABADI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+
+        .autocomplete-items div {
+            padding: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .autocomplete-items div:hover {
+            background-color: #e2e8f0;
+        }
+
+        /* Timeline CSS */
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            padding-bottom: 1.5rem;
+            border-left: 2px solid #e2e8f0;
+        }
+
+        .timeline-item:last-child {
+            border-left: 2px solid transparent;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -0.4rem;
+            top: 0;
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 2px solid #fff;
+        }
+
+        .timeline-item.completed::before {
+            background: #10b981;
+        }
+
+        .timeline-item.pending::before {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 h-screen flex overflow-hidden selection:bg-blue-200">
+
+    <!-- HIDDEN ASSETS UNTUK PDF (Menggunakan header yang diberikan user) -->
+    <div style="display: none;">
+        <img id="header_qs" src="header_qs.png" crossorigin="anonymous">
+        <img id="header_bast" src="header_bast.png" crossorigin="anonymous">
+        <!-- Stamp Approval -->
+        <img id="pdf-stamp" src="data:image/png;base64,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">
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+            <div class="text-center mb-8">
+                <img src="logo.jpg" alt="Logo Maroa" class="h-20 object-contain mx-auto mb-4" style="mix-blend-mode: multiply;">
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">MAROA PMS</h1>
+                <p class="text-xs text-slate-500 mt-2 font-medium">Enterprise Procurement Management System</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="off">
+                <input type="hidden" autocomplete="false" />
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">USERNAME</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" id="loginUser" required autocomplete="new-password" placeholder="Masukkan username" class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">PASSWORD</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-3 text-slate-400"></i>
+                        <input type="password" id="loginPass" required autocomplete="new-password" class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm">
+                    </div>
+                </div>
+                <div id="loginError" class="hidden mb-4 text-xs font-bold text-red-500 text-center bg-red-50 p-2 rounded border border-red-200">
+                    Username atau Password salah!
+                </div>
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-md">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Masuk ke Sistem
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="appWrapper" class="flex w-full h-full hidden">
+        <!-- SIDEBAR -->
+        <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl z-20 flex-shrink-0">
+            <div class="p-5 flex items-center border-b border-slate-800 bg-slate-950">
+                <div class="w-10 h-10 bg-white rounded-md flex items-center justify-center mr-3 p-1 shrink-0">
+                    <img src="logo.jpg" alt="Logo" class="max-h-full object-contain mix-blend-multiply">
+                </div>
+                <div class="overflow-hidden">
+                    <h2 class="font-bold text-sm tracking-wide truncate">MAROA PMS</h2>
+                    <p class="text-[10px] text-slate-400 truncate">PT. MAROA TUNGGA ABADI</p>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto py-4">
+                <div class="px-4 mb-2">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Utama</p>
+                </div>
+                <nav class="space-y-1 px-2">
+                    <a href="#" onclick="switchView('dashboard')" id="nav-dashboard" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-chart-pie w-6 text-center"></i> Dashboard
+                    </a>
+                </nav>
+
+                <div class="px-4 mt-6 mb-2">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Transaksi & Pengadaan</p>
+                </div>
+                <nav class="space-y-1 px-2">
+                    <a href="#" onclick="switchView('quotations')" id="nav-quotations" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-file-invoice-dollar w-6 text-center"></i> Penawaran (Quotation)
+                    </a>
+                    <a href="#" onclick="switchView('pos')" id="nav-pos" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-shopping-cart w-6 text-center"></i> Purchase Order (PO)
+                    </a>
+                    <a href="#" onclick="switchView('basts')" id="nav-basts" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-clipboard-check w-6 text-center"></i> Serah Terima (BAST)
+                    </a>
+                    <a href="#" onclick="switchView('lifecycle')" id="nav-lifecycle" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-project-diagram w-6 text-center"></i> Lifecycle Tracking
+                    </a>
+                </nav>
+
+                <div class="px-4 mt-6 mb-2">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Master Data</p>
+                </div>
+                <nav class="space-y-1 px-2">
+                    <a href="#" onclick="switchView('products')" id="nav-products" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-box w-6 text-center"></i> Master Produk & Part
+                    </a>
+                    <a href="#" onclick="switchView('customers_vendors')" id="nav-customers_vendors" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-users w-6 text-center"></i> Customer & Vendor
+                    </a>
+                </nav>
+
+                <div class="px-4 mt-6 mb-2">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Sistem</p>
+                </div>
+                <nav class="space-y-1 px-2">
+                    <a href="#" onclick="switchView('audit_logs')" id="nav-audit_logs" class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 transition text-slate-300">
+                        <i class="fas fa-history w-6 text-center"></i> Audit Logs
+                    </a>
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-slate-800 text-xs bg-slate-950">
+                <div class="flex items-center text-emerald-400 mb-1">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></div>
+                    Sistem Berjalan Aktif
+                </div>
+                <p class="text-slate-500 truncate">Procurement Internal System</p>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative">
+            <!-- Top Navbar -->
+            <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 flex-shrink-0 z-10 shadow-sm">
+                <div class="flex items-center flex-1">
+                    <div class="relative w-full max-w-md">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+                        <input type="text" id="globalSearchInput" onkeyup="handleGlobalSearch(event)" placeholder="Cari Dokumen (QS, PO, BAST), Part No... (Tekan Enter)" class="w-full pl-9 pr-4 py-2 bg-slate-100 border border-transparent rounded-full text-sm focus:bg-white focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition">
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="headerActionBtnContainer"></div>
+                    <div class="h-6 w-px bg-slate-200"></div>
+                    <div class="flex items-center cursor-pointer hover:bg-slate-50 p-1.5 rounded-lg border border-transparent hover:border-slate-200 transition" onclick="logout()">
+                        <div class="w-8 h-8 rounded-full bg-blue-700 text-white flex items-center justify-center text-sm font-bold mr-2 shadow-sm" id="userAvatar">MS</div>
+                        <div class="text-right mr-1">
+                            <p class="text-xs font-bold text-slate-800 leading-tight" id="userName">Safar</p>
+                            <p class="text-[10px] font-medium text-slate-500" id="userRole">Direktur</p>
+                        </div>
+                        <i class="fas fa-sign-out-alt text-slate-400 text-sm ml-2 hover:text-red-500 transition"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div id="mainContent" class="flex-1 overflow-auto p-6 relative">
+                <!-- Views injected dynamically via JS -->
+            </div>
+
+            <!-- Global Search Result Overlay -->
+            <div id="searchOverlay" class="absolute inset-0 bg-white/95 backdrop-blur z-20 hidden flex-col">
+                <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-white">
+                    <h2 class="text-lg font-bold text-slate-800">Hasil Pencarian: <span id="searchKeyword" class="text-blue-600"></span></h2>
+                    <button onclick="closeGlobalSearch()" class="text-slate-400 hover:text-slate-700 bg-slate-100 p-2 rounded-lg"><i class="fas fa-times"></i> Tutup</button>
+                </div>
+                <div class="p-6 overflow-auto flex-1" id="searchResultsContainer"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- QUOTATION MODAL -->
+    <div id="quotationModal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-[1200px] max-h-[95vh] flex flex-col fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800" id="quotationModalTitle">Form Penawaran Harga (Sales Letter)</h2>
+                    <p class="text-xs text-slate-500">Draft penawaran baru ke klien dengan dukungan gambar produk</p>
+                </div>
+                <button onclick="closeModal('quotationModal')" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 bg-white">
+                <form id="quotationForm" class="space-y-6">
+                    <input type="hidden" id="q_edit_mode" value="">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">NO. QUOTATION</label>
+                            <input type="text" id="q_no" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono text-blue-700 font-bold bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">TANGGAL SURAT *</label>
+                            <input type="date" id="q_date" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">KEPADA (CUSTOMER / KLIEN) *</label>
+                            <div class="flex gap-2">
+                                <select id="q_customer" onchange="toggleNewCustomerInput(this, 'q_customer_new')" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 bg-white"></select>
+                                <input type="text" id="q_customer_new" class="hidden w-2/3 p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500" placeholder="Ketik PT Baru...">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">LOCATION</label>
+                            <input type="text" id="q_location" value="Makassar" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">KETERANGAN (REF)</label>
+                            <input type="text" id="q_ref" placeholder="Contoh: Proyek WBN..." class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">TARIF PAJAK (PPN)</label>
+                            <select id="q_tax" onchange="calcQuotationTotals()" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                                <option value="11">11% PPN (Standar)</option>
+                                <option value="0">0% (Non-PPN)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg overflow-hidden">
+                        <div class="bg-slate-50 p-3 flex justify-between items-center border-b border-slate-200">
+                            <h3 class="text-xs font-bold text-slate-700"><i class="fas fa-boxes mr-1 text-blue-500"></i> RINCIAN ITEM</h3>
+                            <button type="button" onclick="addQuotationRow()" class="text-[10px] bg-white hover:bg-blue-50 text-blue-600 font-bold py-1.5 px-3 rounded border border-blue-200 transition">
+                                <i class="fas fa-plus mr-1"></i> Tambah Baris
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 font-bold border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-2 w-10 text-center">NO</th>
+                                        <th class="p-2 w-48">MPN / PART NO</th>
+                                        <th class="p-2 w-48">DESKRIPSI BARANG</th>
+                                        <th class="p-2 w-32 text-center">FOTO (1.94cm)</th>
+                                        <th class="p-2 w-20">QTY</th>
+                                        <th class="p-2 w-24">UOM</th>
+                                        <th class="p-2 w-32 text-right">PRICE/PCS</th>
+                                        <th class="p-2 w-32 text-right">TOTAL</th>
+                                        <th class="p-2 w-10 text-center">X</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="q_items_body" class="text-sm divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">CATATAN UNTUK CUSTOMER</label>
+                            <textarea id="q_notes" rows="3" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500">1. Harga sudah termasuk pengiriman Franco Site
+2. Mohon diinfokan sebelum melakukan pemesanan karena stok produk terbatas.
+3. TOP 30 Hari
+4. Surat penawaran ini bukan merupakan bukti ikatan transaksi.</textarea>
+                        </div>
+                        <div class="w-full md:w-80 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner">
+                            <div class="flex justify-between items-center mb-2 text-sm"><span class="text-slate-500 font-bold">SUB TOTAL</span><span class="font-bold text-slate-700" id="q_subtotal">Rp 0</span></div>
+                            <div class="flex justify-between items-center mb-3 text-sm"><span class="text-slate-500 font-bold">PPN <span id="q_tax_label">11%</span></span><span class="font-bold text-slate-700" id="q_tax_amount">Rp 0</span></div>
+                            <div class="pt-3 border-t border-slate-200 flex justify-between items-center"><span class="font-bold text-slate-800 text-sm">TOTAL</span><span class="text-lg font-bold text-blue-700" id="q_grandtotal">Rp 0</span></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-xl">
+                <button type="button" onclick="closeModal('quotationModal')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100">Batal</button>
+                <button type="button" onclick="saveQuotation()" class="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"><i class="fas fa-save mr-2"></i> Simpan Draft</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO MODAL (Convert from Quote) -->
+    <div id="poModal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Convert to Purchase Order (PO)</h2>
+                    <p class="text-xs text-blue-600 font-medium" id="po_ref_q_label">Ref QS: -</p>
+                </div>
+                <button onclick="closeModal('poModal')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <form id="poForm" class="space-y-4">
+                    <input type="hidden" id="po_ref_q_id">
+                    <input type="hidden" id="po_customer_id">
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">NOMOR PO INTERNAL (MAROA) *</label>
+                        <input type="text" id="po_internal_no" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 bg-slate-50 font-mono text-emerald-700 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">NOMOR PO CLIENT (DARI CUSTOMER) *</label>
+                        <input type="text" id="po_client_no" required placeholder="Contoh: PO-STM-2026-099" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">TANGGAL PO *</label>
+                        <input type="date" id="po_date" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">PILIH VENDOR / SUPPLIER *</label>
+                        <div class="flex gap-2">
+                            <select id="po_vendor" onchange="toggleNewCustomerInput(this, 'po_vendor_new')" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-blue-500 bg-white"></select>
+                            <input type="text" id="po_vendor_new" class="hidden w-2/3 p-2 text-sm border border-slate-300 rounded-lg" placeholder="Nama Vendor Baru...">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-xl">
+                <button type="button" onclick="closeModal('poModal')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100">Batal</button>
+                <button type="button" onclick="savePO()" class="px-4 py-2 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 shadow-sm"><i class="fas fa-file-export mr-2"></i> Buat PO Draft</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BAST MODAL -->
+    <div id="bastModal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl flex flex-col fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Buat Berita Acara Serah Terima (BAST)</h2>
+                    <p class="text-xs text-slate-500">Hanya PO berstatus 'RECEIVED' yang dapat dibuat BAST</p>
+                </div>
+                <button onclick="closeModal('bastModal')" class="text-slate-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <form id="bastForm" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">NO. BAST INTERNAL</label>
+                        <input type="text" id="bast_no" required class="w-full p-2 text-sm border border-slate-300 rounded-lg bg-slate-50 font-mono text-amber-700 font-bold" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">PILIH PO YANG SUDAH DITERIMA *</label>
+                        <select id="bast_po" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-amber-500 bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">NOMOR SURAT JALAN (DO) *</label>
+                        <input type="text" id="bast_do" required placeholder="Contoh: DO-MTA/2026/09/042" class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-amber-500 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase">TANGGAL SERAH TERIMA *</label>
+                        <input type="date" id="bast_date" required class="w-full p-2 text-sm border border-slate-300 rounded-lg focus:border-amber-500">
+                    </div>
+                </form>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-xl">
+                <button type="button" onclick="closeModal('bastModal')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100">Batal</button>
+                <button type="button" onclick="saveBast()" class="px-4 py-2 text-sm font-bold text-white bg-amber-600 rounded-lg hover:bg-amber-700 shadow-sm"><i class="fas fa-clipboard-check mr-2"></i> Buat BAST</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO DETAILS MODAL -->
+    <div id="poDetailsModal" class="fixed inset-0 modal-overlay z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col fade-in">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">Detail Purchase Order</h2>
+                    <p class="text-xs text-slate-500" id="poDetail_subtitle">Internal PO: -</p>
+                </div>
+                <button onclick="closeModal('poDetailsModal')" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 bg-white">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">NO PO CLIENT</p>
+                        <p class="text-sm font-mono font-bold text-slate-800" id="poDetail_clientPo">-</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">TANGGAL PO</p>
+                        <p class="text-sm font-bold text-slate-800" id="poDetail_date">-</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">VENDOR</p>
+                        <p class="text-sm font-bold text-slate-800 truncate" id="poDetail_vendor">-</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">STATUS</p>
+                        <div id="poDetail_status" class="mt-1"></div>
+                    </div>
+                </div>
+
+                <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="bg-slate-50 p-3 border-b border-slate-200">
+                        <h3 class="text-xs font-bold text-slate-700"><i class="fas fa-boxes mr-1 text-emerald-500"></i> RINCIAN ITEM DIPESAN</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 text-[10px] uppercase text-slate-500 font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-2 w-10 text-center">NO</th>
+                                    <th class="p-2">MPN / PART NO</th>
+                                    <th class="p-2 w-1/2">DESKRIPSI BARANG</th>
+                                    <th class="p-2 text-center">QTY</th>
+                                    <th class="p-2 text-center">UOM</th>
+                                    <th class="p-2 text-right">HARGA (EST)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="poDetail_items" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-xl">
+                <button type="button" onclick="closeModal('poDetailsModal')" class="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg hover:bg-slate-100">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMMON CONFIRMATION MODAL -->
+    <div id="confirmModal" class="fixed inset-0 modal-overlay z-[70] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 fade-in text-center">
+            <div id="confirmIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2" id="confirmTitle">Konfirmasi</h3>
+            <p class="text-sm text-slate-500 mb-6" id="confirmMessage">Apakah Anda yakin?</p>
+            <div class="flex justify-center gap-3">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200">Batal</button>
+                <button id="confirmBtn" class="px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-[80] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        /**
+         * 1. RELATIONAL DATABASE & SEED DATA
+         */
+        const DB_KEY = 'maroa_enterprise_db_v3'; // Bumping version to force data reset for password fix if needed
+
+        const SEED_DATA = {
+            users: [
+                { id: 'Safar', name: 'Muh. Safar Alparel', role: 'Direktur', initials: 'MS', pass: '1114ROA' },
+                { id: 'Surya', name: 'Surya Andika', role: 'Operational Manager', initials: 'SA', pass: '1114ROA' },
+                { id: 'Aat', name: 'Syafaat Fajar', role: 'Staff Procurement', initials: 'SF', pass: '1114ROA' }
+            ],
+            customers: [
+                { id: 'C001', name: 'PT SINAR TERANG MANDIRI', location: 'Makassar' },
+                { id: 'C002', name: 'PT TRAKINDO UTAMA', location: 'Makassar' }
+            ],
+            vendors: [
+                { id: 'V001', name: 'PT SINAR TERANG MANDIRI', location: 'Makassar' },
+                { id: 'V002', name: 'PT TRAKINDO UTAMA', location: 'Makassar' }
+            ],
+            products: [],      
+            quotations: [],    
+            pos: [],           
+            basts: [],         
+            logs: []           
+        };
+
+        const DB = {
+            data: null,
+            init: function () {
+                const stored = localStorage.getItem(DB_KEY);
+                if (stored) {
+                    try { 
+                        this.data = JSON.parse(stored); 
+                    } catch (e) { 
+                        this.data = JSON.parse(JSON.stringify(SEED_DATA)); 
+                    }
+                } else {
+                    this.data = JSON.parse(JSON.stringify(SEED_DATA));
+                }
+                
+                // FORCE UPDATE PASSWORD UNTUK MEMASTIKAN password HANYA 1114ROA
+                this.data.users.forEach(u => u.pass = '1114ROA');
+                this.save();
+            },
+            save: function () {
+                localStorage.setItem(DB_KEY, JSON.stringify(this.data));
+            },
+            get: function (table) { return this.data[table]; },
+            getById: function (table, id) { return this.data[table].find(x => x.id === id); },
+            insert: function (table, record) {
+                this.data[table].unshift(record);
+                this.save();
+                return record;
+            },
+            update: function (table, id, updates) {
+                const idx = this.data[table].findIndex(x => x.id === id);
+                if (idx > -1) {
+                    this.data[table][idx] = { ...this.data[table][idx], ...updates };
+                    this.save();
+                    return this.data[table][idx];
+                }
+                return null;
+            },
+            delete: function (table, id) {
+                this.data[table] = this.data[table].filter(x => x.id !== id);
+                this.save();
+            },
+            log: function (user, action, docType, docId, desc) {
+                this.data.logs.unshift({
+                    id: 'LOG-' + Date.now(),
+                    user: user.name,
+                    action: action,
+                    docType: docType,
+                    docId: docId,
+                    timestamp: new Date().toISOString(),
+                    desc: desc
+                });
+                this.save();
+            }
+        };
+
+        /**
+         * 2. AUTHENTICATION & LOGIN LOGIC
+         */
+        const Auth = {
+            user: null,
+            login: function (username, password) {
+                const users = DB.get('users');
+                const u = users.find(x => x.id.toLowerCase() === username.toLowerCase()); // Case insensitive username
+                
+                // Validasi password kebal bug: Memastikan password yang dimasukkan HANYA 1114ROA
+                if (u && password === u.pass) {
+                    this.user = { id: u.id, name: u.name, role: u.role, initials: u.initials };
+                    sessionStorage.setItem('maroa_session', JSON.stringify(this.user));
+                    DB.log(this.user, 'LOGIN', 'SYSTEM', '-', 'User logged in');
+                    return true;
+                }
+                return false;
+            },
+            logout: function () {
+                if (this.user) DB.log(this.user, 'LOGOUT', 'SYSTEM', '-', 'User logged out');
+                this.user = null;
+                sessionStorage.removeItem('maroa_session');
+            },
+            checkSession: function () {
+                const s = sessionStorage.getItem('maroa_session');
+                if (s) { this.user = JSON.parse(s); return true; }
+                return false;
+            },
+            can: function (action) {
+                const role = this.user.role;
+                switch (action) {
+                    case 'approve_quote': return role === 'Direktur';
+                    case 'delete_draft': return role === 'Direktur' || role === 'Staff Procurement';
+                    case 'create_quote': return role === 'Staff Procurement' || role === 'Direktur';
+                    case 'convert_po': return role === 'Staff Procurement' || role === 'Direktur';
+                    case 'approve_po': return role === 'Direktur' || role === 'Operational Manager';
+                    case 'receive_po': return role === 'Operational Manager' || role === 'Direktur';
+                    case 'create_bast': return role === 'Staff Procurement' || role === 'Direktur';
+                    default: return false;
+                }
+            }
+        };
+
+        /**
+         * 3. UTILITIES FORMATTING
+         */
+        const formatCurrency = (amt) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amt);
+        const formatRp = (v) => 'Rp' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(v).replace(/,/g, '.');
+        const formatDate = (isoString) => {
+            if (!isoString) return '-';
+            const d = new Date(isoString);
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        };
+        const formatDateTime = (isoString) => {
+            if (!isoString) return '-';
+            const d = new Date(isoString);
+            return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        };
+        const getCustomerName = (id) => { const c = DB.getById('customers', id); return c ? c.name : id; };
+        const getVendorName = (id) => { const v = DB.getById('vendors', id); return v ? v.name : id; };
+
+        const showToast = (msg, type = 'info') => {
+            const cont = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const icons = { info: 'fa-info-circle text-blue-500', success: 'fa-check-circle text-green-500', error: 'fa-exclamation-triangle text-red-500', warning: 'fa-exclamation-circle text-amber-500' };
+            const bgs = { info: 'bg-white border-blue-200 text-slate-700', success: 'bg-white border-green-200 text-slate-700', error: 'bg-white border-red-200 text-slate-700', warning: 'bg-white border-amber-200 text-slate-700' };
+
+            toast.className = `flex items-center p-4 mb-3 rounded-lg border shadow-lg fade-in ${bgs[type]} min-w-[250px]`;
+            toast.innerHTML = `<i class="fas ${icons[type]} text-lg mr-3"></i> <span class="text-sm font-medium">${msg}</span>`;
+            cont.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+
+        let confirmCallback = null;
+        function openConfirmModal(title, msg, type, callback) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = msg;
+            const btn = document.getElementById('confirmBtn');
+            const icon = document.getElementById('confirmIcon');
+
+            if (type === 'danger') {
+                btn.className = "px-4 py-2 text-sm font-bold text-white bg-red-600 rounded-lg hover:bg-red-700";
+                icon.innerHTML = `<i class="fas fa-trash-alt text-red-600 text-xl"></i>`;
+                icon.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4";
+            } else if (type === 'success') {
+                btn.className = "px-4 py-2 text-sm font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700";
+                icon.innerHTML = `<i class="fas fa-check text-emerald-600 text-xl"></i>`;
+                icon.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 mb-4";
+            } else {
+                btn.className = "px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700";
+                icon.innerHTML = `<i class="fas fa-question text-blue-600 text-xl"></i>`;
+                icon.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4";
+            }
+
+            confirmCallback = callback;
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+        function closeConfirmModal() { document.getElementById('confirmModal').classList.add('hidden'); confirmCallback = null; }
+        document.getElementById('confirmBtn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            closeConfirmModal();
+        });
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        /**
+         * 4. APP INITIALIZATION & ROUTING
+         */
+        window.onload = () => {
+            DB.init(); // Init will force correct password
+            if (Auth.checkSession()) {
+                initAppUI();
+            } else {
+                showLogin();
+            }
+        };
+
+        function showLogin() {
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            document.getElementById('loginError').classList.add('hidden');
+            document.getElementById('appWrapper').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        window.handleLogin = function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                const u = document.getElementById('loginUser').value.trim();
+                const p = document.getElementById('loginPass').value;
+                if (Auth.login(u, p)) {
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    initAppUI();
+                    showToast(`Selamat datang, ${Auth.user.name}`, 'success');
+                } else {
+                    document.getElementById('loginError').classList.remove('hidden');
+                }
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Masuk ke Sistem';
+                btn.disabled = false;
+            }, 300); // Simulate tiny network delay, but keeps it fast and prevents double clicks
+        };
+
+        window.logout = function() {
+            Auth.logout();
+            showLogin();
+        };
+
+        function initAppUI() {
+            document.getElementById('appWrapper').classList.remove('hidden');
+            document.getElementById('userName').innerText = Auth.user.name;
+            document.getElementById('userRole').innerText = Auth.user.role;
+            document.getElementById('userAvatar').innerText = Auth.user.initials;
+            switchView('dashboard');
+        }
+
+        let currentView = 'dashboard';
+        window.switchView = function(viewName) {
+            currentView = viewName;
+            document.querySelectorAll('aside nav a').forEach(a => {
+                a.classList.remove('bg-slate-800', 'text-white');
+                if (!a.classList.contains('cursor-not-allowed')) a.classList.add('text-slate-300');
+            });
+            const activeNav = document.getElementById(`nav-${viewName}`);
+            if (activeNav) {
+                activeNav.classList.remove('text-slate-300');
+                activeNav.classList.add('bg-slate-800', 'text-white');
+            }
+
+            const btnContainer = document.getElementById('headerActionBtnContainer');
+            btnContainer.innerHTML = '';
+            if (viewName === 'quotations' && Auth.can('create_quote')) {
+                btnContainer.innerHTML = `<button onclick="openQuotationModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center shadow-sm"><i class="fas fa-plus mr-2"></i> Penawaran Baru</button>`;
+            } else if (viewName === 'basts' && Auth.can('create_bast')) {
+                btnContainer.innerHTML = `<button onclick="openBastModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center shadow-sm"><i class="fas fa-plus mr-2"></i> Buat BAST Baru</button>`;
+            }
+
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '';
+            if (viewName === 'dashboard') renderDashboard(container);
+            else if (viewName === 'quotations') renderQuotations(container);
+            else if (viewName === 'pos') renderPOs(container);
+            else if (viewName === 'basts') renderBASTs(container);
+            else if (viewName === 'lifecycle') renderLifecycle(container);
+            else if (viewName === 'products') renderProducts(container);
+            else if (viewName === 'customers_vendors') renderCustVend(container);
+            else if (viewName === 'audit_logs') renderAuditLogs(container);
+
+            closeGlobalSearch();
+        };
+
+        function getStatusBadge(status) {
+            const maps = {
+                'DRAFT': 'bg-slate-100 text-slate-600',
+                'SUBMITTED': 'bg-blue-100 text-blue-700',
+                'APPROVED': 'bg-emerald-100 text-emerald-700',
+                'REJECTED': 'bg-red-100 text-red-700',
+                'CONVERTED_TO_PO': 'bg-purple-100 text-purple-700',
+                'PENDING_APPROVAL': 'bg-amber-100 text-amber-700',
+                'ORDERED': 'bg-cyan-100 text-cyan-700',
+                'RECEIVED': 'bg-teal-100 text-teal-700',
+                'COMPLETED': 'bg-green-100 text-green-800'
+            };
+            const c = maps[status] || 'bg-gray-100 text-gray-700';
+            return `<span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${c}">${status.replace(/_/g, ' ')}</span>`;
+        }
+
+        /**
+         * 5. FULL RENDERERS
+         */
+        function renderDashboard(container) {
+            const qs = DB.get('quotations');
+            const pos = DB.get('pos');
+            const totalQ = qs.reduce((sum, q) => sum + (q.status !== 'REJECTED' ? q.total : 0), 0);
+            const totalPO = pos.reduce((sum, po) => sum + (po.status !== 'REJECTED' ? po.total : 0), 0);
+            
+            const qDraft = qs.filter(q => q.status === 'DRAFT').length;
+            const qAppr = qs.filter(q => q.status === 'APPROVED' || q.status === 'CONVERTED_TO_PO').length;
+
+            const poPend = pos.filter(p => p.status === 'PENDING_APPROVAL').length;
+            const poOrd = pos.filter(p => p.status === 'ORDERED').length;
+            const poRec = pos.filter(p => p.status === 'RECEIVED' || p.status === 'COMPLETED').length;
+            
+            container.innerHTML = `
+                <div class="fade-in max-w-6xl mx-auto">
+                    <div class="bg-gradient-to-r from-slate-900 to-blue-900 rounded-2xl p-8 text-white shadow-lg mb-6 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 opacity-10 pointer-events-none">
+                            <i class="fas fa-chart-line text-[150px] -mt-10 -mr-10"></i>
+                        </div>
+                        <span class="bg-blue-800 text-blue-100 text-[10px] font-bold px-2 py-1 rounded-full uppercase border border-blue-700">MAROA PMS DASHBOARD</span>
+                        <h1 class="text-3xl font-bold mt-4 tracking-tight">Sistem Pengadaan Terintegrasi</h1>
+                        <p class="text-blue-200 text-sm mt-2 max-w-xl">Overview status dokumen Quotation, Purchase Order, dan BAST hari ini berdasarkan hak akses Anda.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-500 uppercase">Total Penawaran Aktif</p>
+                                <div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center text-blue-500"><i class="fas fa-file-invoice-dollar"></i></div>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">${formatCurrency(totalQ)}</h3>
+                            <p class="text-[10px] text-slate-400 mt-2">${qs.length} Total Dokumen QS</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-500 uppercase">Total Nilai PO</p>
+                                <div class="w-8 h-8 rounded bg-emerald-50 flex items-center justify-center text-emerald-500"><i class="fas fa-shopping-cart"></i></div>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">${formatCurrency(totalPO)}</h3>
+                            <p class="text-[10px] text-slate-400 mt-2">${pos.length} Total Dokumen PO</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-500 uppercase">Status Quotation</p>
+                                <div class="w-8 h-8 rounded bg-purple-50 flex items-center justify-center text-purple-500"><i class="fas fa-tasks"></i></div>
+                            </div>
+                            <div class="flex gap-4 mt-1">
+                                <div><span class="text-lg font-bold text-slate-700">${qDraft}</span><span class="text-[10px] text-slate-500 block">Draft</span></div>
+                                <div><span class="text-lg font-bold text-emerald-600">${qAppr}</span><span class="text-[10px] text-slate-500 block">Approved</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-2">
+                                <p class="text-xs font-bold text-slate-500 uppercase">Status PO</p>
+                                <div class="w-8 h-8 rounded bg-amber-50 flex items-center justify-center text-amber-500"><i class="fas fa-truck-loading"></i></div>
+                            </div>
+                            <div class="flex gap-3 mt-1">
+                                <div><span class="text-lg font-bold text-amber-500">${poPend}</span><span class="text-[10px] text-slate-500 block">Pending</span></div>
+                                <div><span class="text-lg font-bold text-cyan-600">${poOrd}</span><span class="text-[10px] text-slate-500 block">Ordered</span></div>
+                                <div><span class="text-lg font-bold text-teal-600">${poRec}</span><span class="text-[10px] text-slate-500 block">Received</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuotations(container) {
+            const qs = DB.get('quotations');
+            container.innerHTML = `
+                <div class="fade-in h-full flex flex-col">
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-slate-800">Penawaran Harga (Quotations)</h2>
+                        <p class="text-xs text-slate-500 mt-1">Kelola pembuatan dan persetujuan surat penawaran.</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
+                        <div class="overflow-auto flex-1">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead class="bg-slate-50 sticky top-0 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-500 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 pl-6">No. Quotation</th>
+                                        <th class="px-4 py-3">Tanggal</th>
+                                        <th class="px-4 py-3">Customer</th>
+                                        <th class="px-4 py-3 text-right">Grand Total</th>
+                                        <th class="px-4 py-3 text-center">Status</th>
+                                        <th class="px-4 py-3 text-right pr-6">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-sm">
+                                    ${qs.length === 0 ? `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">Belum ada data penawaran.</td></tr>` :
+                    qs.map(q => `
+                                        <tr class="hover:bg-slate-50 transition group">
+                                            <td class="px-4 py-3 pl-6 font-mono text-blue-700 font-bold text-xs">${q.id}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs">${formatDate(q.date)}</td>
+                                            <td class="px-4 py-3 font-medium text-slate-700 truncate max-w-[200px]">${getCustomerName(q.customerId)}</td>
+                                            <td class="px-4 py-3 text-right font-bold text-slate-800">${formatCurrency(q.total)}</td>
+                                            <td class="px-4 py-3 text-center">${getStatusBadge(q.status)}</td>
+                                            <td class="px-4 py-3 text-right pr-6 space-x-1">
+                                                <button onclick="generateQS_PDF('${q.id}')" class="text-slate-400 hover:text-blue-600 p-1.5 rounded hover:bg-blue-50 transition" title="Cetak PDF"><i class="fas fa-file-pdf"></i></button>
+                                                ${q.status === 'DRAFT' ? `<button onclick="openEditQuotationModal('${q.id}')" class="text-slate-400 hover:text-amber-500 p-1.5 rounded hover:bg-amber-50 transition" title="Lihat & Edit Draft"><i class="fas fa-edit"></i></button>` : ''}
+                                                ${q.status === 'DRAFT' ? `<button onclick="actionSubmitQS('${q.id}')" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded hover:bg-indigo-50 transition" title="Submit untuk Approval"><i class="fas fa-paper-plane"></i></button>` : ''}
+                                                ${q.status === 'SUBMITTED' && Auth.can('approve_quote') ? `<button onclick="actionApproveQS('${q.id}')" class="text-slate-400 hover:text-emerald-600 p-1.5 rounded hover:bg-emerald-50 transition" title="Approve Penawaran"><i class="fas fa-check-double"></i></button>` : ''}
+                                                ${q.status === 'APPROVED' && Auth.can('convert_po') ? `<button onclick="openPOModalFromQS('${q.id}')" class="text-slate-400 hover:text-purple-600 p-1.5 rounded hover:bg-purple-50 transition" title="Convert ke PO"><i class="fas fa-exchange-alt"></i></button>` : ''}
+                                                ${q.status === 'DRAFT' && Auth.can('delete_draft') ? `<button onclick="actionDeleteQS('${q.id}')" class="text-slate-400 hover:text-red-600 p-1.5 rounded hover:bg-red-50 transition" title="Hapus Draft"><i class="fas fa-trash-alt"></i></button>` : ''}
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPOs(container) {
+            const pos = DB.get('pos');
+            container.innerHTML = `
+                <div class="fade-in h-full flex flex-col">
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-slate-800">Purchase Orders (PO)</h2>
+                        <p class="text-xs text-slate-500 mt-1">Daftar pemesanan barang ke Vendor / Supplier berdasarkan Quotation.</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
+                        <div class="overflow-auto flex-1">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead class="bg-slate-50 sticky top-0 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-500 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 pl-6">No. PO (Internal)</th>
+                                        <th class="px-4 py-3">No. PO Client</th>
+                                        <th class="px-4 py-3">Vendor</th>
+                                        <th class="px-4 py-3 text-center">Status</th>
+                                        <th class="px-4 py-3 text-right pr-6">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-sm">
+                                    ${pos.length === 0 ? `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic">Belum ada data Purchase Order.</td></tr>` :
+                    pos.map(po => `
+                                        <tr class="hover:bg-slate-50 transition group">
+                                            <td class="px-4 py-3 pl-6 font-mono text-emerald-700 font-bold text-xs">${po.id}</td>
+                                            <td class="px-4 py-3 font-mono text-slate-600 text-xs">${po.clientPo}</td>
+                                            <td class="px-4 py-3 font-medium text-slate-700 truncate max-w-[150px]">${getVendorName(po.vendorId)}</td>
+                                            <td class="px-4 py-3 text-center">${getStatusBadge(po.status)}</td>
+                                            <td class="px-4 py-3 text-right pr-6 space-x-1">
+                                                ${po.status === 'DRAFT' ? `<button onclick="actionSubmitPO('${po.id}')" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded transition"><i class="fas fa-paper-plane"></i></button>` : ''}
+                                                ${po.status === 'PENDING_APPROVAL' && Auth.can('approve_po') ? `<button onclick="actionApprovePO('${po.id}')" class="text-slate-400 hover:text-emerald-600 p-1.5 rounded transition"><i class="fas fa-check-double"></i></button>` : ''}
+                                                ${po.status === 'ORDERED' && Auth.can('receive_po') ? `<button onclick="actionReceivePO('${po.id}')" class="text-slate-400 hover:text-teal-600 p-1.5 rounded transition"><i class="fas fa-box-open"></i></button>` : ''}
+                                                <button onclick="viewPODetails('${po.id}')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded transition"><i class="fas fa-eye"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderBASTs(container) {
+            const basts = DB.get('basts');
+            container.innerHTML = `
+                <div class="fade-in h-full flex flex-col">
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-slate-800">Berita Acara Serah Terima (BAST)</h2>
+                        <p class="text-xs text-slate-500 mt-1">Dokumen serah terima barang resmi berdasar PO.</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
+                        <div class="overflow-auto flex-1">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead class="bg-slate-50 sticky top-0 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-500 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 pl-6">No. BAST</th>
+                                        <th class="px-4 py-3">Tanggal</th>
+                                        <th class="px-4 py-3">Customer</th>
+                                        <th class="px-4 py-3">Surat Jalan (DO)</th>
+                                        <th class="px-4 py-3 text-center">Status</th>
+                                        <th class="px-4 py-3 text-right pr-6">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-sm">
+                                    ${basts.length === 0 ? `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">Belum ada data BAST.</td></tr>` :
+                    basts.map(b => `<tr class="hover:bg-slate-50 transition group">
+                                            <td class="px-4 py-3 pl-6 font-mono text-amber-700 font-bold text-xs">${b.id}</td>
+                                            <td class="px-4 py-3 text-slate-600 text-xs">${formatDate(b.date)}</td>
+                                            <td class="px-4 py-3 font-medium text-slate-700 truncate max-w-[200px]">${getCustomerName(b.customerId)}</td>
+                                            <td class="px-4 py-3 font-mono text-slate-600 text-xs">${b.doNumber}</td>
+                                            <td class="px-4 py-3 text-center">${getStatusBadge(b.status)}</td>
+                                            <td class="px-4 py-3 text-right pr-6 space-x-1">
+                                                <button onclick="generateBASTPDF('${b.id}')" class="text-slate-400 hover:text-amber-600 p-1.5 rounded transition" title="Cetak PDF Resmi"><i class="fas fa-file-pdf"></i></button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProducts(container) {
+            const prods = DB.get('products');
+            container.innerHTML = `
+                <div class="fade-in h-full flex flex-col">
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-slate-800">Master Data Produk & Part</h2>
+                        <p class="text-xs text-slate-500 mt-1">Katalog item yang pernah dimasukkan ke dalam sistem via Quotation.</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
+                        <div class="p-4 border-b border-slate-100 bg-slate-50">
+                            <input type="text" id="searchMasterProduct" onkeyup="filterMasterProducts()" placeholder="Cari Part No / Nama..." class="w-full max-w-sm px-4 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:border-blue-500">
+                        </div>
+                        <div class="overflow-auto flex-1">
+                            <table class="w-full text-left border-collapse whitespace-nowrap" id="masterProductsTable">
+                                <thead class="bg-slate-50 sticky top-0 border-b border-slate-200 text-[10px] uppercase font-bold text-slate-500 z-10">
+                                    <tr>
+                                        <th class="px-4 py-3 pl-6 w-10 text-center">NO</th>
+                                        <th class="px-4 py-3">MPN / PART NO</th>
+                                        <th class="px-4 py-3">NAMA / DESKRIPSI BARANG</th>
+                                        <th class="px-4 py-3 text-center">UOM</th>
+                                        <th class="px-4 py-3 text-right pr-6">HARGA TERAKHIR</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-sm">
+                                    ${prods.length === 0 ? `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic">Katalog produk masih kosong.</td></tr>` :
+                    prods.map((p, index) => `
+                                        <tr class="hover:bg-slate-50 prod-row">
+                                            <td class="px-4 py-3 pl-6 text-center text-xs text-slate-400">${index + 1}</td>
+                                            <td class="px-4 py-3 font-mono text-blue-700 font-bold text-xs prod-search">${p.partNo}</td>
+                                            <td class="px-4 py-3 font-medium text-slate-700 truncate max-w-[300px] prod-search" title="${p.name}">${p.name}</td>
+                                            <td class="px-4 py-3 text-center"><span class="px-2 py-1 bg-slate-100 border rounded text-[10px] font-bold text-slate-600">${p.uom}</span></td>
+                                            <td class="px-4 py-3 text-right font-bold text-slate-800 pr-6">${formatCurrency(p.lastPrice)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.filterMasterProducts = function () {
+            const filter = document.getElementById('searchMasterProduct').value.toLowerCase();
+            const rows = document.getElementsByClassName('prod-row');
+            for (let i = 0; i < rows.length; i++) {
+                const targets = rows[i].getElementsByClassName('prod-search');
+                let match = false;
+                for (let j = 0; j < targets.length; j++) {
+                    if (targets[j].textContent.toLowerCase().includes(filter)) match = true;
+                }
+                rows[i].style.display = match ? "" : "none";
+            }
+        };
+
+        function renderCustVend(container) {
+            const custs = DB.get('customers');
+            const vends = DB.get('vendors');
+
+            container.innerHTML = `
+                <div class="fade-in h-full flex flex-col gap-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Master Data Relasi</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-0">
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                            <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 font-bold text-sm text-slate-700"><i class="fas fa-building mr-2 text-blue-500"></i> Data Customers / Klien</div>
+                            <div class="overflow-auto flex-1 p-2">
+                                <ul class="divide-y divide-slate-100">
+                                    ${custs.map(c => `<li class="p-3 hover:bg-slate-50 rounded-lg transition"><div class="font-bold text-sm text-slate-800">${c.name}</div><div class="text-[10px] text-slate-400 font-mono mt-0.5">ID: ${c.id} | Loc: ${c.location || '-'}</div></li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col overflow-hidden">
+                            <div class="bg-slate-50 border-b border-slate-200 px-4 py-3 font-bold text-sm text-slate-700"><i class="fas fa-truck mr-2 text-emerald-500"></i> Data Vendor / Supplier</div>
+                            <div class="overflow-auto flex-1 p-2">
+                                <ul class="divide-y divide-slate-100">
+                                    ${vends.map(v => `<li class="p-3 hover:bg-slate-50 rounded-lg transition"><div class="font-bold text-sm text-slate-800">${v.name}</div><div class="text-[10px] text-slate-400 font-mono mt-0.5">ID: ${v.id} | Loc: ${v.location || '-'}</div></li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAuditLogs(container) {
+            const logs = DB.get('logs');
+            container.innerHTML = `
+                <div class="fade-in h-full flex flex-col">
+                    <div class="mb-4">
+                        <h2 class="text-xl font-bold text-slate-800">Sistem Audit Logs</h2>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm flex-1 overflow-auto p-2">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="bg-slate-50 sticky top-0 text-[10px] uppercase font-bold text-slate-500 z-10">
+                                <tr>
+                                    <th class="px-4 py-2 pl-4">Timestamp</th>
+                                    <th class="px-4 py-2">User</th>
+                                    <th class="px-4 py-2">Action</th>
+                                    <th class="px-4 py-2">Document</th>
+                                    <th class="px-4 py-2 w-full">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-xs">
+                                ${logs.map(l => `
+                                    <tr class="hover:bg-slate-50">
+                                        <td class="px-4 py-2 pl-4 text-slate-500">${formatDateTime(l.timestamp)}</td>
+                                        <td class="px-4 py-2 font-bold text-slate-700">${l.user}</td>
+                                        <td class="px-4 py-2 font-mono font-bold ${l.action.includes('DELETE') || l.action.includes('REJECT') ? 'text-red-500' : 'text-blue-600'}">${l.action}</td>
+                                        <td class="px-4 py-2 font-mono text-slate-500">${l.docType} [${l.docId}]</td>
+                                        <td class="px-4 py-2 text-slate-600 truncate">${l.desc}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLifecycle(container) {
+            container.innerHTML = `
+                <div class="fade-in max-w-4xl mx-auto w-full pt-4 h-full flex flex-col">
+                    <h2 class="text-xl font-bold text-slate-800">Lifecycle Tracking</h2>
+                    <p class="text-xs text-slate-500 mt-1 mb-6">Lacak status dan perjalanan dokumen dari Quotation hingga BAST.</p>
+                    
+                    <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-200 mb-6 flex gap-2">
+                        <div class="relative flex-1">
+                            <i class="fas fa-search absolute left-3 top-3 text-slate-400 text-sm"></i>
+                            <input type="text" id="trackInput" placeholder="Masukkan Nomor Quotation, PO, atau BAST..." class="w-full pl-9 pr-4 py-2.5 bg-transparent text-sm focus:outline-none">
+                        </div>
+                        <button onclick="runLifecycleTracking()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition shadow-sm">Lacak</button>
+                    </div>
+                    
+                    <div id="trackingResultContainer" class="flex-1 overflow-auto relative">
+                        <div class="absolute inset-0 flex items-center justify-center text-slate-300 flex-col">
+                            <i class="fas fa-route text-4xl mb-3"></i>
+                            <p class="text-sm">Masukkan nomor dokumen untuk melihat alur.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.runLifecycleTracking = function () {
+            const q = document.getElementById('trackInput').value.trim().toUpperCase();
+            if (!q) return;
+            const container = document.getElementById('trackingResultContainer');
+
+            let qsId = null, po = null, bast = null;
+
+            const qMatch = DB.getById('quotations', q);
+            if (qMatch) qsId = qMatch.id;
+            else {
+                po = DB.get('pos').find(x => x.id === q || x.clientPo === q);
+                if (po) qsId = po.refQuotationId;
+                else {
+                    bast = DB.get('basts').find(x => x.id === q);
+                    if (bast) {
+                        po = DB.getById('pos', bast.refPoId);
+                        if (po) qsId = po.refQuotationId;
+                    }
+                }
+            }
+
+            if (!qsId) {
+                container.innerHTML = `<div class="absolute inset-0 flex items-center justify-center text-red-400 flex-col fade-in"><i class="fas fa-exclamation-circle text-4xl mb-3"></i><p>Dokumen tidak ditemukan dalam alur.</p></div>`;
+                return;
+            }
+
+            const qDoc = DB.getById('quotations', qsId);
+            const poDoc = po || DB.get('pos').find(x => x.refQuotationId === qsId);
+            const bastDoc = bast || (poDoc ? DB.get('basts').find(x => x.refPoId === poDoc.id) : null);
+
+            container.innerHTML = `
+                <div class="fade-in p-6">
+                    <h3 class="font-bold text-slate-800 border-b pb-3 mb-6">Trace Result for: ${q}</h3>
+                    <div class="ml-4">
+                        <div class="timeline-item ${qDoc ? 'completed' : 'pending'}">
+                            <h4 class="font-bold text-slate-800">1. Quotation (Penawaran)</h4>
+                            ${qDoc ? `<div class="bg-slate-50 border p-3 rounded mt-2 text-sm">
+                                <span class="font-mono text-blue-600 font-bold">${qDoc.id}</span> | ${formatDate(qDoc.date)}<br>
+                                Customer: ${getCustomerName(qDoc.customerId)}<br>
+                                Status: ${getStatusBadge(qDoc.status)}
+                            </div>` : `<p class="text-xs text-slate-400 mt-2">Belum ada dokumen</p>`}
+                        </div>
+                        
+                        <div class="timeline-item ${poDoc && poDoc.status !== 'DRAFT' ? 'completed' : 'pending'} mt-2">
+                            <h4 class="font-bold text-slate-800">2. Purchase Order (Pemesanan & Kedatangan)</h4>
+                            ${poDoc ? `<div class="bg-slate-50 border p-3 rounded mt-2 text-sm">
+                                Internal: <span class="font-mono text-emerald-600 font-bold">${poDoc.id}</span> | Client: <span class="font-mono">${poDoc.clientPo}</span><br>
+                                Vendor: ${getVendorName(poDoc.vendorId)}<br>
+                                Status: ${getStatusBadge(poDoc.status)}
+                                ${poDoc.receivedAt ? `<br><span class="text-teal-600"><i class="fas fa-check-circle"></i> Barang Diterima: ${formatDateTime(poDoc.receivedAt)}</span>` : ''}
+                            </div>` : `<p class="text-xs text-slate-400 mt-2">Belum ada proses PO.</p>`}
+                        </div>
+                        
+                        <div class="timeline-item ${bastDoc ? 'completed' : 'pending'} mt-2">
+                            <h4 class="font-bold text-slate-800">3. BAST (Serah Terima)</h4>
+                            ${bastDoc ? `<div class="bg-slate-50 border p-3 rounded mt-2 text-sm">
+                                <span class="font-mono text-amber-700 font-bold">${bastDoc.id}</span> | DO: ${bastDoc.doNumber}<br>
+                                Diserahkan kepada: ${getCustomerName(bastDoc.customerId)}<br>
+                                Status: ${getStatusBadge(bastDoc.status)}
+                            </div>` : `<p class="text-xs text-slate-400 mt-2">Dokumen Serah Terima belum dibuat.</p>`}
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        window.handleGlobalSearch = function (e) {
+            if (e.key === 'Enter') {
+                const q = e.target.value.trim().toUpperCase();
+                if (!q) return;
+
+                document.getElementById('searchOverlay').classList.remove('hidden');
+                document.getElementById('searchKeyword').innerText = q;
+                const container = document.getElementById('searchResultsContainer');
+
+                let html = '<div class="space-y-4">';
+                let found = 0;
+
+                const qs = DB.get('quotations').filter(x => x.id.includes(q) || (getCustomerName(x.customerId) || "").toUpperCase().includes(q));
+                if (qs.length > 0) {
+                    html += `<h4 class="font-bold text-slate-700 border-b pb-2">Quotations</h4><ul class="space-y-2">`;
+                    qs.forEach(item => { found++; html += `<li class="p-3 bg-slate-50 border rounded-lg hover:bg-slate-100 cursor-pointer" onclick="switchView('quotations')"><span class="font-mono font-bold text-blue-600">${item.id}</span> - ${getCustomerName(item.customerId)} <div class="float-right">${getStatusBadge(item.status)}</div></li>`; });
+                    html += `</ul>`;
+                }
+
+                const pos = DB.get('pos').filter(x => x.id.includes(q) || x.clientPo.includes(q) || (getVendorName(x.vendorId) || "").toUpperCase().includes(q));
+                if (pos.length > 0) {
+                    html += `<h4 class="font-bold text-slate-700 border-b pb-2 mt-4">Purchase Orders</h4><ul class="space-y-2">`;
+                    pos.forEach(item => { found++; html += `<li class="p-3 bg-slate-50 border rounded-lg hover:bg-slate-100 cursor-pointer" onclick="switchView('pos')"><span class="font-mono font-bold text-emerald-600">${item.id}</span> (Client: ${item.clientPo}) <div class="float-right">${getStatusBadge(item.status)}</div></li>`; });
+                    html += `</ul>`;
+                }
+
+                if (found === 0) {
+                    html += `<div class="p-8 text-center text-slate-400"><i class="fas fa-search-minus text-4xl mb-3 block"></i>Tidak ditemukan hasil untuk "${q}"</div>`;
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+            }
+        };
+        window.closeGlobalSearch = function () {
+            document.getElementById('searchOverlay').classList.add('hidden');
+            const searchInput = document.getElementById('globalSearchInput');
+            if (searchInput) searchInput.value = '';
+        };
+
+        /**
+         * 6. QUOTATION LOGIC & FILE INPUTS
+         */
+        let qItemCount = 0;
+
+        window.openQuotationModal = function() {
+            if (!Auth.can('create_quote')) { showToast('Anda tidak memiliki akses.', 'error'); return; }
+            document.getElementById('quotationModal').classList.remove('hidden');
+            document.getElementById('quotationForm').reset();
+            document.getElementById('q_edit_mode').value = "";
+            document.getElementById('quotationModalTitle').innerText = "Form Penawaran Harga (Sales Letter)";
+            document.getElementById('q_no').readOnly = false;
+
+            const qs = DB.get('quotations');
+            const nextId = (qs.length + 1).toString().padStart(4, '0');
+            const rom = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][new Date().getMonth()];
+            document.getElementById('q_no').value = `${nextId}/QS/MTA/${rom}/${new Date().getFullYear()}`;
+            document.getElementById('q_date').valueAsDate = new Date();
+
+            const sel = document.getElementById('q_customer');
+            const custs = DB.get('customers');
+            sel.innerHTML = custs.map(c => `<option value="${c.id}">${c.name}</option>`).join('') + `<option value="NEW" class="text-blue-600 font-bold">+ Tambah PT / Klien Baru</option>`;
+            toggleNewCustomerInput(sel, 'q_customer_new');
+
+            document.getElementById('q_items_body').innerHTML = '';
+            qItemCount = 0;
+            addQuotationRow();
+            calcQuotationTotals();
+        };
+
+        window.openEditQuotationModal = function(qId) {
+            const q = DB.getById('quotations', qId);
+            if (!q || q.status !== 'DRAFT') return;
+            
+            document.getElementById('quotationModal').classList.remove('hidden');
+            document.getElementById('quotationForm').reset();
+            document.getElementById('q_edit_mode').value = qId;
+            document.getElementById('quotationModalTitle').innerText = "Edit Penawaran Harga (Draft)";
+            
+            document.getElementById('q_no').value = q.id;
+            document.getElementById('q_no').readOnly = true;
+            document.getElementById('q_date').value = q.date;
+            
+            const sel = document.getElementById('q_customer');
+            const custs = DB.get('customers');
+            sel.innerHTML = custs.map(c => `<option value="${c.id}">${c.name}</option>`).join('') + `<option value="NEW" class="text-blue-600 font-bold">+ Tambah PT / Klien Baru</option>`;
+            sel.value = q.customerId;
+            toggleNewCustomerInput(sel, 'q_customer_new');
+            
+            document.getElementById('q_location').value = q.location || '';
+            document.getElementById('q_ref').value = q.ref || '';
+            document.getElementById('q_tax').value = q.taxRate || 0;
+            document.getElementById('q_notes').value = q.notes || '';
+            
+            document.getElementById('q_items_body').innerHTML = '';
+            qItemCount = 0;
+            
+            if(q.items && q.items.length > 0) {
+                q.items.forEach(item => addQuotationRow(item));
+            } else {
+                addQuotationRow();
+            }
+            
+            calcQuotationTotals();
+        };
+
+        window.toggleNewCustomerInput = function (selectElem, inputId) {
+            const input = document.getElementById(inputId);
+            if (selectElem.value === 'NEW') {
+                input.classList.remove('hidden');
+                selectElem.classList.remove('w-full'); selectElem.classList.add('w-1/3');
+                input.required = true;
+            } else {
+                input.classList.add('hidden');
+                selectElem.classList.remove('w-1/3'); selectElem.classList.add('w-full');
+                input.required = false;
+            }
+        };
+
+        window.addQuotationRow = function(item = null) {
+            qItemCount++;
+            const tbody = document.getElementById('q_items_body');
+            const tr = document.createElement('tr');
+            tr.id = `q_item_row_${qItemCount}`;
+            tr.className = "group";
+            
+            const spec = item ? item.spec : '';
+            const desc = item ? item.desc : '';
+            const qty = item ? item.qty : 1;
+            const uom = item ? item.uom : 'PC';
+            const price = item ? item.price : 0;
+            const total = item ? item.total : 0;
+            const imgBase64 = item && item.imgBase64 ? item.imgBase64 : '';
+            
+            const imgNameClass = imgBase64 ? '' : 'hidden';
+            const imgLabel = imgBase64 ? '✓ Terkait (Tersimpan)' : '';
+
+            tr.innerHTML = `
+                <td class="p-2 text-center text-xs font-bold text-slate-400 align-top pt-4">${qItemCount}</td>
+                <td class="p-2 align-top relative">
+                    <input type="text" value="${spec}" class="w-full text-xs p-2 border border-slate-300 rounded focus:border-blue-500 item-spec" placeholder="Part No..." autocomplete="off">
+                </td>
+                <td class="p-2 align-top">
+                    <textarea class="w-full text-xs p-2 border border-slate-300 rounded resize-none item-desc focus:border-blue-500" rows="2" placeholder="Nama Barang...">${desc}</textarea>
+                </td>
+                <td class="p-2 align-top text-center">
+                    <input type="file" accept="image/*" class="hidden item-file" onchange="handleImageUpload(this)">
+                    <button type="button" onclick="this.previousElementSibling.click()" class="text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 py-1.5 px-2 rounded border border-slate-300 w-full"><i class="fas fa-image mr-1"></i> Pilih Foto</button>
+                    <div class="mt-1 text-[9px] text-emerald-600 font-bold item-file-name ${imgNameClass}">${imgLabel}</div>
+                    <input type="hidden" class="item-img-base64" value="${imgBase64}">
+                </td>
+                <td class="p-2 align-top"><input type="number" min="1" value="${qty}" class="w-full text-xs p-2 border border-slate-300 rounded text-center item-qty focus:border-blue-500" oninput="calcQuotationTotals()"></td>
+                <td class="p-2 align-top">
+                    <select class="w-full text-xs p-2 border border-slate-300 rounded item-uom focus:border-blue-500">
+                        <option ${uom === 'PC' ? 'selected' : ''}>PC</option>
+                        <option ${uom === 'EA' ? 'selected' : ''}>EA</option>
+                        <option ${uom === 'UNIT' ? 'selected' : ''}>UNIT</option>
+                        <option ${uom === 'SET' ? 'selected' : ''}>SET</option>
+                        <option ${uom === 'LOT' ? 'selected' : ''}>LOT</option>
+                    </select>
+                </td>
+                <td class="p-2 align-top"><input type="number" min="0" value="${price}" class="w-full text-xs p-2 border border-slate-300 rounded text-right item-price focus:border-blue-500" oninput="calcQuotationTotals()"></td>
+                <td class="p-2 text-right font-bold text-xs item-total align-top pt-4 text-slate-700">${formatCurrency(total)}</td>
+                <td class="p-2 text-center align-top pt-3"><button type="button" onclick="document.getElementById('q_item_row_${qItemCount}').remove(); calcQuotationTotals(); updateQRowNumbers();" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-times-circle text-lg"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+            updateQRowNumbers();
+        };
+
+        window.handleImageUpload = function(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const tr = input.closest('tr');
+                    tr.querySelector('.item-img-base64').value = e.target.result;
+                    const nameLabel = tr.querySelector('.item-file-name');
+                    nameLabel.innerText = "✓ Terkait (" + (file.size/1024).toFixed(0) + "KB)";
+                    nameLabel.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        function updateQRowNumbers() {
+            document.querySelectorAll('#q_items_body tr').forEach((row, idx) => {
+                row.querySelector('td:first-child').innerText = idx + 1;
+            });
+        }
+
+        window.calcQuotationTotals = function () {
+            let subtotal = 0;
+            document.querySelectorAll('#q_items_body tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const total = qty * price;
+                row.querySelector('.item-total').innerText = formatCurrency(total);
+                subtotal += total;
+            });
+            const taxRate = parseFloat(document.getElementById('q_tax').value) || 0;
+            const tax = subtotal * (taxRate / 100);
+            
+            document.getElementById('q_tax_label').innerText = `${taxRate}%`;
+            document.getElementById('q_subtotal').innerText = formatCurrency(subtotal);
+            document.getElementById('q_tax_amount').innerText = formatCurrency(tax);
+            document.getElementById('q_grandtotal').innerText = formatCurrency(subtotal + tax);
+        };
+
+        window.saveQuotation = function () {
+            let custId = document.getElementById('q_customer').value;
+            if (custId === 'NEW') {
+                const newName = document.getElementById('q_customer_new').value.trim();
+                if (!newName) { showToast('Nama klien baru harus diisi.', 'error'); return; }
+                custId = 'C' + (DB.get('customers').length + 1).toString().padStart(3, '0');
+                DB.insert('customers', { id: custId, name: newName.toUpperCase(), location: document.getElementById('q_location').value });
+            }
+
+            const items = [];
+            document.querySelectorAll('#q_items_body tr').forEach(row => {
+                const desc = row.querySelector('.item-desc').value.trim();
+                const spec = row.querySelector('.item-spec').value.trim();
+                const qty = parseFloat(row.querySelector('.item-qty').value);
+                const uom = row.querySelector('.item-uom').value;
+                const price = parseFloat(row.querySelector('.item-price').value);
+                const imgBase64 = row.querySelector('.item-img-base64').value;
+
+                if (desc || spec) {
+                    items.push({ desc, spec, qty, uom, price, total: qty * price, imgBase64 });
+                    
+                    // Auto master data 
+                    if (spec) {
+                        const prods = DB.get('products');
+                        const existing = prods.find(p => p.partNo === spec);
+                        if (existing) {
+                            DB.update('products', existing.id, { lastPrice: price });
+                        } else {
+                            DB.insert('products', { id: 'P' + Date.now().toString().slice(-6), partNo: spec.toUpperCase(), name: desc, uom: uom, lastPrice: price });
+                        }
+                    }
+                }
+            });
+
+            if (items.length === 0) { showToast('Minimal masukkan 1 item penawaran.', 'warning'); return; }
+
+            const sub = parseFloat(document.getElementById('q_subtotal').innerText.replace(/[^0-9,-]/g, '').replace(',', '.'));
+            const tax = parseFloat(document.getElementById('q_tax_amount').innerText.replace(/[^0-9,-]/g, '').replace(',', '.'));
+            const tot = parseFloat(document.getElementById('q_grandtotal').innerText.replace(/[^0-9]/g, ''));
+            const qId = document.getElementById('q_no').value;
+            const editModeId = document.getElementById('q_edit_mode').value;
+
+            if (editModeId) {
+                // Update mode
+                DB.update('quotations', editModeId, {
+                    date: document.getElementById('q_date').value,
+                    customerId: custId,
+                    location: document.getElementById('q_location').value,
+                    ref: document.getElementById('q_ref').value,
+                    taxRate: parseFloat(document.getElementById('q_tax').value),
+                    subtotal: sub, tax: tax, total: tot,
+                    notes: document.getElementById('q_notes').value,
+                    items: items,
+                    updatedBy: Auth.user.id,
+                    updatedAt: new Date().toISOString()
+                });
+                DB.log(Auth.user, 'UPDATE', 'QUOTATION', editModeId, `Updated Draft Quotation`);
+                showToast('Draft Penawaran berhasil diperbarui.', 'success');
+            } else {
+                // Insert mode
+                DB.insert('quotations', {
+                    id: qId,
+                    date: document.getElementById('q_date').value,
+                    customerId: custId,
+                    location: document.getElementById('q_location').value,
+                    ref: document.getElementById('q_ref').value,
+                    taxRate: parseFloat(document.getElementById('q_tax').value),
+                    subtotal: sub, tax: tax, total: tot,
+                    notes: document.getElementById('q_notes').value,
+                    status: 'DRAFT',
+                    items: items,
+                    createdBy: Auth.user.id,
+                    createdAt: new Date().toISOString()
+                });
+                DB.log(Auth.user, 'CREATE', 'QUOTATION', qId, `Created Draft Quotation`);
+                showToast('Draft Penawaran berhasil disimpan.', 'success');
+            }
+
+            closeModal('quotationModal');
+            if (currentView === 'quotations') renderQuotations(document.getElementById('mainContent'));
+        };
+
+        window.actionSubmitQS = function (id) {
+            openConfirmModal('Submit Quotation', `Kirim QS ${id} untuk direview oleh Direktur?`, 'info', () => {
+                DB.update('quotations', id, { status: 'SUBMITTED' });
+                DB.log(Auth.user, 'SUBMIT', 'QUOTATION', id, 'Submitted for approval');
+                showToast('Quotation berhasil disubmit.', 'success');
+                renderQuotations(document.getElementById('mainContent'));
+            });
+        };
+        window.actionApproveQS = function (id) {
+            openConfirmModal('Approve Quotation', `Setujui QS ${id} agar dapat diteruskan ke Vendor?`, 'success', () => {
+                DB.update('quotations', id, { status: 'APPROVED', approvedBy: Auth.user.id, approvedAt: new Date().toISOString() });
+                DB.log(Auth.user, 'APPROVE', 'QUOTATION', id, 'Quotation Approved');
+                showToast('Quotation disetujui.', 'success');
+                renderQuotations(document.getElementById('mainContent'));
+            });
+        };
+        window.actionDeleteQS = function (id) {
+            openConfirmModal('Hapus Permanen', `Yakin menghapus draft QS ${id}?`, 'danger', () => {
+                DB.delete('quotations', id);
+                DB.log(Auth.user, 'DELETE', 'QUOTATION', id, 'Deleted Draft Quotation');
+                showToast('Draft berhasil dihapus.', 'success');
+                renderQuotations(document.getElementById('mainContent'));
+            });
+        };
+
+        /**
+         * 7. PURCHASE ORDER LOGIC
+         */
+        window.openPOModalFromQS = function (qId) {
+            if (!Auth.can('convert_po')) { showToast('Akses ditolak.', 'error'); return; }
+            const q = DB.getById('quotations', qId);
+            if (!q || q.status !== 'APPROVED') return;
+
+            document.getElementById('poModal').classList.remove('hidden');
+            document.getElementById('poForm').reset();
+
+            document.getElementById('po_ref_q_label').innerText = `Ref QS: ${q.id} (${getCustomerName(q.customerId)})`;
+            document.getElementById('po_ref_q_id').value = q.id;
+            document.getElementById('po_customer_id').value = q.customerId;
+
+            const nextId = (DB.get('pos').length + 1).toString().padStart(4, '0');
+            const rom = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][new Date().getMonth()];
+            document.getElementById('po_internal_no').value = `MTA/PO/${rom}/${new Date().getFullYear()}-${nextId}`;
+            document.getElementById('po_date').valueAsDate = new Date();
+
+            const sel = document.getElementById('po_vendor');
+            const vends = DB.get('vendors');
+            sel.innerHTML = vends.map(v => `<option value="${v.id}">${v.name}</option>`).join('') + `<option value="NEW" class="text-blue-600 font-bold">+ Tambah Vendor Baru</option>`;
+            toggleNewCustomerInput(sel, 'po_vendor_new');
+        };
+
+        window.savePO = function () {
+            let vendorId = document.getElementById('po_vendor').value;
+            if (vendorId === 'NEW') {
+                const newName = document.getElementById('po_vendor_new').value.trim();
+                if (!newName) { showToast('Nama vendor baru harus diisi.', 'error'); return; }
+                vendorId = 'V' + (DB.get('vendors').length + 1).toString().padStart(3, '0');
+                DB.insert('vendors', { id: vendorId, name: newName.toUpperCase() });
+            }
+
+            const qId = document.getElementById('po_ref_q_id').value;
+            const q = DB.getById('quotations', qId);
+            const internalPo = document.getElementById('po_internal_no').value;
+            const clientPo = document.getElementById('po_client_no').value.toUpperCase();
+
+            const poItems = JSON.parse(JSON.stringify(q.items));
+
+            DB.insert('pos', {
+                id: internalPo,
+                clientPo: clientPo,
+                date: document.getElementById('po_date').value,
+                customerId: q.customerId,
+                vendorId: vendorId,
+                refQuotationId: qId,
+                status: 'DRAFT',
+                total: q.subtotal, 
+                items: poItems,
+                createdBy: Auth.user.id
+            });
+
+            DB.update('quotations', qId, { status: 'CONVERTED_TO_PO' });
+            DB.log(Auth.user, 'CREATE', 'PO', internalPo, `Converted from QS ${qId}`);
+
+            closeModal('poModal');
+            showToast('Purchase Order berhasil dibuat.', 'success');
+            if (currentView === 'quotations') renderQuotations(document.getElementById('mainContent'));
+            else if (currentView === 'pos') renderPOs(document.getElementById('mainContent'));
+        };
+
+        window.actionSubmitPO = function (id) {
+            openConfirmModal('Submit PO', `Ajukan PO Internal [${id}] untuk approval?`, 'info', () => {
+                DB.update('pos', id, { status: 'PENDING_APPROVAL' });
+                DB.log(Auth.user, 'SUBMIT', 'PO', id, 'Submitted for approval');
+                showToast('PO diajukan.', 'success');
+                renderPOs(document.getElementById('mainContent'));
+            });
+        };
+
+        window.actionApprovePO = function (id) {
+            openConfirmModal('Approve & Order', `Setujui PO [${id}] dan tandai sebagai dipesan ke Vendor?`, 'success', () => {
+                DB.update('pos', id, { status: 'ORDERED', approvedBy: Auth.user.id });
+                DB.log(Auth.user, 'APPROVE', 'PO', id, 'PO Approved and Ordered to Vendor');
+                showToast('PO Disetujui & Dipesan.', 'success');
+                renderPOs(document.getElementById('mainContent'));
+            });
+        };
+
+        window.actionReceivePO = function (id) {
+            openConfirmModal('Verifikasi Barang', `Konfirmasi fisik barang untuk PO [${id}] sudah tiba dan sesuai?`, 'success', () => {
+                DB.update('pos', id, { status: 'RECEIVED', receivedAt: new Date().toISOString() });
+                DB.log(Auth.user, 'RECEIVE', 'PO', id, 'Physical goods received at office/site');
+                showToast('Barang dikonfirmasi diterima.', 'success');
+                renderPOs(document.getElementById('mainContent'));
+            });
+        };
+
+        window.viewPODetails = function (id) {
+            const po = DB.getById('pos', id);
+            if (!po) return;
+
+            document.getElementById('poDetail_subtitle').innerText = `Internal PO: ${po.id} | Ref QS: ${po.refQuotationId}`;
+            document.getElementById('poDetail_clientPo').innerText = po.clientPo;
+            document.getElementById('poDetail_date').innerText = formatDate(po.date);
+            document.getElementById('poDetail_vendor').innerText = getVendorName(po.vendorId);
+            document.getElementById('poDetail_status').innerHTML = getStatusBadge(po.status);
+            
+            const tbody = document.getElementById('poDetail_items');
+            tbody.innerHTML = '';
+
+            if (po.items && po.items.length > 0) {
+                po.items.forEach((item, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50";
+                    tr.innerHTML = `
+                        <td class="p-2 text-center text-xs text-slate-400">${index + 1}</td>
+                        <td class="p-2 font-mono text-xs font-bold text-emerald-700">${item.spec || '-'}</td>
+                        <td class="p-2 text-slate-700 text-xs">${item.desc}</td>
+                        <td class="p-2 text-center font-bold text-slate-800">${item.qty}</td>
+                        <td class="p-2 text-center text-xs">${item.uom}</td>
+                        <td class="p-2 text-right text-xs">${formatCurrency(item.price)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 text-xs">Tidak ada detail item</td></tr>`;
+            }
+
+            document.getElementById('poDetailsModal').classList.remove('hidden');
+        };
+
+        /**
+         * 8. BAST LOGIC
+         */
+        window.openBastModal = function () {
+            if (!Auth.can('create_bast')) { showToast('Akses ditolak.', 'error'); return; }
+
+            const eligiblePOs = DB.get('pos').filter(p => p.status === 'RECEIVED');
+            if (eligiblePOs.length === 0) {
+                showToast('Tidak ada PO dengan status RECEIVED.', 'warning');
+                return;
+            }
+
+            document.getElementById('bastModal').classList.remove('hidden');
+            document.getElementById('bastForm').reset();
+
+            const nextId = (DB.get('basts').length + 1).toString().padStart(4, '0');
+            const rom = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'][new Date().getMonth()];
+            document.getElementById('bast_no').value = `${nextId}/BAST/MTA/${rom}/${new Date().getFullYear()}`;
+            document.getElementById('bast_date').valueAsDate = new Date();
+
+            const sel = document.getElementById('bast_po');
+            sel.innerHTML = eligiblePOs.map(p => `<option value="${p.id}">${p.clientPo} (${getCustomerName(p.customerId)})</option>`).join('');
+        };
+
+        window.saveBast = function () {
+            const poId = document.getElementById('bast_po').value;
+            const po = DB.getById('pos', poId);
+            if (!po) return;
+
+            const bastNo = document.getElementById('bast_no').value;
+
+            DB.insert('basts', {
+                id: bastNo,
+                date: document.getElementById('bast_date').value,
+                customerId: po.customerId,
+                refPoId: po.id,
+                doNumber: document.getElementById('bast_do').value.toUpperCase(),
+                status: 'COMPLETED',
+                createdBy: Auth.user.id
+            });
+
+            DB.update('pos', poId, { status: 'COMPLETED' });
+            DB.log(Auth.user, 'CREATE', 'BAST', bastNo, `Created BAST for Client PO ${po.clientPo}`);
+
+            closeModal('bastModal');
+            showToast('BAST Resmi berhasil diterbitkan.', 'success');
+            if (currentView === 'basts') renderBASTs(document.getElementById('mainContent'));
+        };
+
+
+        /**
+         * 9. PDF GENERATION ENGINE
+         */
+        
+        window.generateQS_PDF = function (qId) {
+            const q = DB.getById('quotations', qId);
+            if (!q) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            const custName = getCustomerName(q.customerId);
+
+            // Draw Full Header from user provided PNG
+            const headerImg = document.getElementById('header_qs');
+            if (headerImg && headerImg.complete && headerImg.naturalWidth !== 0) {
+                // Header is roughly 515 width by aspect ratio height.
+                doc.addImage(headerImg, 'PNG', 40, 20, 515, 60); 
+            }
+
+            let startY = 100;
+            
+            // Draw Target Info Based on Template `image_40a0d7.png`
+            // Left Box
+            doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+            doc.text("Kepada :", 40, startY);
+            doc.setFont("helvetica", "bold");
+            doc.text(custName, 40, startY + 15, { maxWidth: 240 });
+
+            // Right Box
+            doc.setDrawColor(0); doc.setLineWidth(0.5); // Rampingkan garis luar
+            doc.rect(290, startY - 12, 265, 45); // Wrapper Box
+            
+            doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+            doc.text("No Quotation", 295, startY); doc.text(":", 365, startY);
+            doc.setFont("helvetica", "bold"); doc.text(q.id, 370, startY);
+
+            doc.setFont("helvetica", "normal");
+            doc.text("Tanggal", 295, startY + 15); doc.text(":", 365, startY + 15);
+            doc.text(formatDate(q.date), 370, startY + 15);
+            
+            doc.text("Location", 295, startY + 30); doc.text(":", 365, startY + 30);
+            doc.text(q.location || "Makassar", 370, startY + 30);
+
+            startY += 55;
+            doc.setFontSize(10);
+            doc.text("Sesuai dengan penawaran barang yang telah Kami terima, maka dengan ini Kami ajukan", 40, startY);
+            doc.text("penawaran harga sebagai berikut:", 40, startY + 12);
+            doc.setFont("helvetica", "bold"); doc.setFontSize(11);
+            doc.text(`Keterangan : ${q.ref || "-"}`, 40, startY + 35);
+
+            // Build Table Content
+            const tableBody = q.items.map((item, idx) => [
+                idx + 1, item.spec || '-', item.desc, item.qty, item.uom, formatRp(item.price), formatRp(item.total)
+            ]);
+
+            doc.autoTable({
+                startY: startY + 45,
+                head: [['NO', 'MPN', 'DESKRIPSI', 'QTY', 'UOM', 'PRICE/PCS', 'TOTAL']],
+                body: tableBody,
+                theme: 'grid',
+                headStyles: { fillColor: [74, 134, 232], textColor: 255, fontStyle: 'bold', halign: 'center', lineWidth: 0.5, lineColor: 0 },
+                bodyStyles: { fontSize: 9, textColor: 0, lineColor: 0, lineWidth: 0.5, halign: 'center', valign: 'middle' },
+                columnStyles: { 
+                    0: { cellWidth: 25 }, 
+                    1: { cellWidth: 90 }, 
+                    2: { halign: 'center', cellWidth: 'auto' }, 
+                    3: { cellWidth: 35 }, 
+                    4: { cellWidth: 35 }, 
+                    5: { cellWidth: 70 }, 
+                    6: { cellWidth: 80 } 
+                },
+                margin: { left: 40, right: 40 },
+                didParseCell: function(data) {
+                    if (data.column.index === 2 && data.cell.section === 'body') {
+                        const item = q.items[data.row.index];
+                        if (item.imgBase64) {
+                            const textLines = doc.splitTextToSize(data.cell.text.join('\n'), data.cell.width - 10);
+                            const textHeight = textLines.length * (data.cell.styles.fontSize * 1.15);
+                            data.cell.styles.minCellHeight = textHeight + 65; // Cukupkan tinggi tabel untuk gambar
+                        }
+                    }
+                },
+                willDrawCell: function(data) {
+                    // Kosongkan teks bawaan jsPDF-autotable karena kita akan menggambar Teks + Gambar secara manual agar sejajar
+                    if (data.column.index === 2 && data.cell.section === 'body') {
+                        data.cell.text = [];
+                    }
+                },
+                didDrawCell: function(data) {
+                    if (data.column.index === 2 && data.cell.section === 'body') {
+                        const item = q.items[data.row.index];
+                        const imgSize = 55; // 1.94 cm
+                        const fontSize = data.cell.styles.fontSize;
+                        
+                        doc.setFont("helvetica", "normal");
+                        doc.setFontSize(fontSize);
+                        
+                        const originalText = item.desc || '-';
+                        const textLines = doc.splitTextToSize(originalText, data.cell.width - 10);
+                        const textHeight = textLines.length * (fontSize * 1.15);
+                        
+                        let totalContentHeight = textHeight;
+                        if (item.imgBase64) {
+                            totalContentHeight += imgSize + 5; // Tambah gap 5pt
+                        }
+                        
+                        // Menghitung titik awal vertikal agar Teks + Gambar persis berada di tengah sel
+                        let startY = data.cell.y + (data.cell.height - totalContentHeight) / 2;
+                        
+                        // 1. Gambar Teksnya terlebih dahulu di atas
+                        doc.setTextColor(0, 0, 0);
+                        const textBaselineY = startY + (fontSize * 0.8);
+                        doc.text(textLines, data.cell.x + data.cell.width / 2, textBaselineY, { align: 'center' });
+                        
+                        // 2. Gambar produk persis di bawah teksnya
+                        if (item.imgBase64) {
+                            const imgX = data.cell.x + (data.cell.width - imgSize) / 2;
+                            const imgY = startY + textHeight + 5;
+                            try { doc.addImage(item.imgBase64, 'PNG', imgX, imgY, imgSize, imgSize); } catch(e) {}
+                        }
+                    }
+                },
+                foot: [
+                    [{ content: '', colSpan: 5, styles: { fillColor: 255 } }, { content: 'TOTAL', styles: { fontStyle: 'bold', fillColor: 255 } }, { content: formatRp(q.subtotal), styles: { fontStyle: 'bold', fillColor: 255, halign: 'center' } }],
+                    [{ content: '', colSpan: 5, styles: { fillColor: 255 } }, { content: `PPN ${q.taxRate}%`, styles: { fontStyle: 'bold', fillColor: 255 } }, { content: formatRp(q.tax), styles: { fontStyle: 'bold', fillColor: 255, halign: 'center' } }],
+                    [{ content: '', colSpan: 5, styles: { fillColor: 255 } }, { content: 'SUB TOTAL', styles: { fontStyle: 'bold', fillColor: 255 } }, { content: formatRp(q.total), styles: { fontStyle: 'bold', fillColor: 255, halign: 'center' } }]
+                ],
+                footStyles: { textColor: 0, lineWidth: 0.5, lineColor: 0, halign: 'center' }
+            });
+
+            let finalY = doc.lastAutoTable.finalY + 20;
+            doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text("Catatan:", 40, finalY);
+            const noteLines = (q.notes || '-').split('\n');
+            noteLines.forEach((line, idx) => {
+                doc.text(line, 40, finalY + 12 + (idx * 12));
+            });
+
+            let closingY = finalY + 12 + (noteLines.length * 12) + 20;
+            doc.text("Demikian penawaran harga yang Kami ajukan, jika ada pertanyaan dapat menghubungi:", 40, closingY);
+            doc.setFont("helvetica", "bold");
+            doc.text("Muh. Safar Alparel (0852 5600 6119)", 40, closingY + 12);
+            doc.setFont("helvetica", "normal");
+            doc.text("Terima kasih.", 40, closingY + 24);
+
+            let sigY = closingY + 40;
+            
+            // Check if page break is needed for stamp
+            if (sigY + 100 > doc.internal.pageSize.getHeight() - 40) {
+                doc.addPage();
+                sigY = 40;
+            }
+
+            // --- Pembubuhan Stempel Tengah ---
+            if (q.status !== 'DRAFT' && q.status !== 'REJECTED') {
+                const stamp = document.getElementById('pdf-stamp');
+                if (stamp && stamp.complete) {
+                    const stampWidth = 200; // Menyesuaikan dari template
+                    const stampHeight = 70;
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    // Hitung X untuk posisi center
+                    const stampX = (pageWidth - stampWidth) / 2; 
+                    
+                    // Posisikan stamp di bawah teks penutup di tengah-tengah
+                    try { doc.addImage(stamp, 'PNG', stampX, sigY, stampWidth, stampHeight); } catch (e) {}
+                }
+            }
+            // -------------------------------------------
+
+            // Footer Text light blue
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+                doc.setTextColor(96, 181, 234); // Match Header Text Color
+                doc.text("PT. MAROA TUNGGA ABADI | Jl. Sultan Dg. Raja No. 59, Ruko No. 63, Timungan Lompoa, Bontoala, Kota Makassar, Sulawesi Selatan - 90152", 297, doc.internal.pageSize.getHeight() - 30, { align: 'center' });
+                doc.text("Email: shafaralfarel@gmail.com | Phone: 0852 5600 6119 | Instagram: @maroatunggaabadi", 297, doc.internal.pageSize.getHeight() - 20, { align: 'center' });
+                doc.setTextColor(0, 0, 0);
+            }
+
+            doc.save(`Quotation_${q.id.replace(/\//g, '_')}.pdf`);
+        };
+
+        window.generateBASTPDF = function (bId) {
+            const bast = DB.getById('basts', bId);
+            if (!bast) return;
+            const po = DB.getById('pos', bast.refPoId);
+            const q = po ? DB.getById('quotations', po.refQuotationId) : null;
+            if (!q) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'pt', 'a4');
+            const custName = getCustomerName(bast.customerId);
+
+            // BAST Header
+            const headerImg = document.getElementById('header_bast');
+            if (headerImg && headerImg.complete && headerImg.naturalWidth !== 0) {
+                doc.addImage(headerImg, 'PNG', 40, 20, 515, 60); 
+            }
+
+            let startY = 115;
+            doc.setFont("courier", "bold"); doc.setFontSize(14); doc.setTextColor(0, 0, 0);
+            doc.text("BERITA ACARA SERAH TERIMA", 297, startY, { align: 'center' });
+            startY += 25;
+            doc.setFontSize(11);
+            doc.text(`PT ${custName.toUpperCase()}`, 297, startY, { align: 'center' });
+            startY += 15;
+            doc.text(`No. PO: ${po.clientPo}`, 297, startY, { align: 'center' });
+
+            const tableBody = po.items.map((item, idx) => [idx + 1, item.desc, item.qty, item.uom]);
+            
+            doc.autoTable({
+                startY: startY + 25,
+                head: [['NO', 'DESKRIPSI', 'QTY', 'UOM']],
+                body: tableBody,
+                theme: 'grid',
+                headStyles: { fillColor: [74, 134, 232], textColor: 255, fontStyle: 'bold', halign: 'center', lineWidth: 0.5, lineColor: 0 },
+                bodyStyles: { fontSize: 10, textColor: 0, lineWidth: 0.5, lineColor: 0, halign: 'center' },
+                columnStyles: { 0: { cellWidth: 40 }, 1: { halign: 'center', cellWidth: 'auto' }, 2: { cellWidth: 60 }, 3: { cellWidth: 60 } },
+                margin: { left: 40, right: 40 }
+            });
+
+            let boxY = doc.lastAutoTable.finalY + 40;
+            
+            if (boxY + 180 > doc.internal.pageSize.getHeight() - 40) {
+                doc.addPage();
+                boxY = 60;
+            }
+            
+            doc.setLineWidth(0.5); doc.setDrawColor(0); // Garis disamakan
+            doc.rect(40, boxY, 515, 180); // Outer Box
+            doc.line(297, boxY, 297, boxY + 180); // Center Div
+            doc.line(40, boxY + 150, 555, boxY + 150); // Date Line
+
+            doc.setFont("courier", "bold"); doc.setFontSize(11);
+            doc.text("HORMAT KAMI", 168, boxY + 20, { align: 'center' });
+            doc.text("PT. MAROA TUNGGA ABADI", 168, boxY + 35, { align: 'center' });
+            doc.text("DATE : ", 50, boxY + 168);
+
+            doc.text("PENERIMA", 426, boxY + 20, { align: 'center' });
+            doc.text(`PT ${custName.toUpperCase()}`, 426, boxY + 35, { align: 'center', maxWidth: 220 });
+            doc.text("DATE:", 307, boxY + 168);
+
+            // BAST Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+                doc.setTextColor(96, 181, 234);
+                doc.text("PT. MAROA TUNGGA ABADI | Jl. Sultan Dg. Raja No. 59, Ruko No. 63, Timungan Lompoa, Bontoala, Kota Makassar, Sulawesi Selatan - 90152", 297, doc.internal.pageSize.getHeight() - 30, { align: 'center' });
+                doc.text("Email: shafaralfarel@gmail.com | Phone: 0852 5600 6119 | Instagram: @maroatunggaabadi", 297, doc.internal.pageSize.getHeight() - 20, { align: 'center' });
+                doc.setTextColor(0, 0, 0);
+            }
+
+            doc.save(`BAST_${bast.id.replace(/\//g, '_')}.pdf`);
+        };
+    </script>
+</body>
+</html>
